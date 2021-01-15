@@ -1,84 +1,90 @@
 export function appendTemplate(element, tagName, html) {
-    const wrapElement = document.createElement(tagName)
+  const wrapElement = document.createElement(tagName);
 
-    wrapElement.innerHTML = html
+  wrapElement.innerHTML = html;
 
-    element.append(wrapElement)
+  element.append(wrapElement);
 
-    return wrapElement
+  return wrapElement;
 }
 
 export function getQueryString() {
+  const queryString = {};
 
-    const queryString = {}
+  if (window.location.search) {
+    window.location.search
+      .split("?")[1]
+      .split("&")
+      .forEach((param) => {
+        param = param.split("=");
 
-    if (window.location.search) {
+        queryString[param[0]] = decodeURIComponent(param[1]);
+      });
+  }
 
-        window.location.search.split("?")[1].split("&").forEach(param => {
-
-            param = param.split("=")
-
-            queryString[param[0]] = decodeURIComponent(param[1])
-
-        })
-
-    }
-
-    return queryString
-
+  return queryString;
 }
 
 export function setFormValues(form, values) {
+  Object.keys(values).forEach((key) => {
+    const field = form.querySelector(`[name=${key}]`);
 
-    Object.keys(values).forEach(key => {
-
-        const field = form.querySelector(`[name=${key}]`)
-
-        switch (field.type) {
-
-            case "select":
-                field.querySelector(`option[value=${values[key]}]`).selected = true
-                break  
-            case "checkbox":
-            case "radio":
-                form.querySelector(`[name=${key}][value=${values[key]}]`).checked = true
-                break
-            default:
-                field.value = values[key]
-
-        }
-
-    })
-
+    switch (field.type) {
+      case "select":
+        field.querySelector(`option[value=${values[key]}]`).selected = true;
+        break;
+      case "checkbox":
+      case "radio":
+        form.querySelector(
+          `[name=${key}][value=${values[key]}]`
+        ).checked = true;
+        break;
+      default:
+        field.value = values[key];
+    }
+  });
 }
 
 export function getFormValues(form) {
+  const values = {};
 
-    const values = {}
+  form.querySelectorAll("[name]").forEach((field) => {
+    switch (field.type) {
+      case "select":
+        values[field.name] = field.querySelector("option:selected")?.value;
+        break;
+      case "radio":
+        values[field.name] = form.querySelector(
+          `[name=${field.name}]:checked`
+        )?.value;
+        break;
+      case "checkbox":
+        values[field.name] = [];
+        form
+          .querySelectorAll(`[name=${field.name}]:checked`)
+          .forEach((checkbox) => {
+            values[field.name].push(checkbox.value);
+          });
+        break;
+      default:
+        values[field.name] = field.value;
+    }
+  });
 
-    form.querySelectorAll("[name]").forEach(field => {
+  return values;
+}
 
-        switch (field.type) {
+export function hideAlertError(form) {
+  const alertElement = form.querySelector(".alert.danger");
 
-            case "select":
-                values[field.name] = field.querySelector("option:selected")?.value
-                break
-            case "radio":
-                values[field.name] = form.querySelector(`[name=${field.name}]:checked`)?.value
-                break
-            case "checkbox":
-                values[field.name] = []
-                form.querySelectorAll(`[name=${field.name}]:checked`).forEach(checkbox => {
-                    values[field.name].push(checkbox.value)
-                })
-                break
-            default:
-                values[field.name] = field.value
+  alertElement.style.display = "none";
+}
 
-        }
+export function showAlertError(form) {
+  return (error) => {
+    const alertElement = form.querySelector(".alert.danger");
 
-    })
-
-    return values
-
+    alertElement.innerHTML = error.message;
+    alertElement.style.display = "block";
+  };
 }

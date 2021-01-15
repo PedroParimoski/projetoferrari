@@ -1,10 +1,13 @@
 {
   "hosting": {
     "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
-  }
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  },
+  "apiKey": "AIzaSyCjUlPfsZHH3Ixuzlkg7DxH97qn8iUJkeM",
+  "authDomain": "ferrari-brasil.firebaseapp.com",
+  "projectId": "ferrari-brasil",
+  "storageBucket": "ferrari-brasil.appspot.com",
+  "messagingSenderId": "723842067449",
+  "appId": "1:723842067449:web:bab1944616ea70befd2b28",
+  "measurementId": "G-N1CDD473X2"
 }

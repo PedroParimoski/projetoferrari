@@ -1,65 +1,118 @@
-const authPage = document.querySelector('main#auth')
+import firebase from "./firebase-app";
+import { getFormValues, hideAlertError, showAlertError } from "./utils";
 
-if(authPage){
+const authPage = document.querySelector("main#auth");
 
-    const hideAuthForms = () => {
+if (authPage) {
+  const auth = firebase.auth();
 
-        document.querySelectorAll("#auth form")
-        .forEach( el => el.classList.add('hide'))
+  const hideAuthForms = () => {
+    document
+      .querySelectorAll("#auth form")
+      .forEach((el) => el.classList.add("hide"));
+  };
+
+  const showAuthForm = (id) => {
+    document.getElementById(id).classList.remove("hide");
+  };
+
+  const authHash = () => {
+    hideAuthForms();
+
+    if (sessionStorage.getItem("email")) {
+      document
+        .querySelectorAll("[name=email]")
+        .forEach((el) => (el.value = sessionStorage.getItem("email")));
     }
 
-    const showAuthForm = id => {
-
-        document.getElementById(id).classList.remove('hide')
+    //analise o hash na url da window. window.location.hash
+    switch (window.location.hash) {
+      case "#register":
+        showAuthForm("register");
+        break;
+      case "#login":
+        showAuthForm("login");
+        break;
+      case "#forget":
+        showAuthForm("forget");
+        break;
+      case "#reset":
+        showAuthForm("reset");
+        break;
+      default:
+        //showAuthForm('auth-email')
+        showAuthForm("login");
     }
+  };
 
-    const authHash = () =>{
-        hideAuthForms()
+  window.addEventListener("load", (e) => {
+    authHash();
+  });
 
-        if(sessionStorage.getItem('email')){
-            document.querySelectorAll('[name=email]')
-            .forEach(el => el.value = sessionStorage.getItem('email'))
-        }
+  window.addEventListener("hashchange", (e) => {
+    authHash();
+  });
 
-        //analise o hash na url da window. window.location.hash
-        switch(window.location.hash){
-            case '#register' :
-                showAuthForm('register')
-                break
-            case '#login' :
-                showAuthForm('login')
-                break
-            case '#forget' :
-                showAuthForm('forget')
-                break
-            case '#reset' :
-                showAuthForm('reset')
-                break
-            default :
-                showAuthForm('auth-email')
-        }
-    }
+  const formAuthEmail = document.querySelector("#auth-email");
 
-    window.addEventListener('load', e => {
-        authHash()
-    })
+  formAuthEmail.addEventListener("submit", (e) => {
+    e.preventDefault();
+    //e.stopPropagation()
+    const btnSubmit = e.target.querySelector("[type=submit]");
+    btnSubmit.disabled = true;
 
-    window.addEventListener('hashchange', e => {
-        authHash()
-    })
+    sessionStorage.setItem("email", formAuthEmail.email.value);
+    location.hash = "#login";
+    btnSubmit.disabled = false;
+  });
 
-    const formAuthEmail = document.querySelector("#auth-email")
+  const formAuthRegister = document.querySelector("#register");
 
-    formAuthEmail.addEventListener('submit', e => {
+  formAuthRegister.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-        e.preventDefault()
-        //e.stopPropagation()
-        const btnSubmit = e.target.querySelector('[type=submit]')
-        btnSubmit.disabled = true
+    hideAlertError(formAuthRegister);
 
-        sessionStorage.setItem('email', formAuthEmail.email.value)
-        location.hash = '#login'
-        btnSubmit.disabled = false
-        
-    })
+    const values = getFormValues(formAuthRegister);
+
+    auth
+      .createUserWithEmailAndPassword(values.email, values.password)
+      .then((response) => {
+        const { user } = response;
+
+        user.updateProfile({
+          displayName: values.name,
+        });
+
+        window.location.href = "/";
+      })
+      .catch(showAlertError(formAuthRegister));
+  });
+
+  const formAuthLogin = document.querySelector("#login");
+
+  formAuthLogin.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    hideAlertError(formAuthLogin);
+
+    const values = getFormValues(formAuthLogin);
+
+    auth
+      .signInWithEmailAndPassword(values.email, values.password)
+      .then((response) => (window.location.href = "/"))
+      .catch(showAlertError(formAuthLogin));
+  });
+
+  document.querySelector("#login .facebook").addEventListener("click", (e) => {
+    const provider = new firebase.auth.FacebookAuthProvider();
+
+    auth.signInWithRedirect(provider);
+    /*
+        auth
+            .signInWithPopup(provider)
+            .then( window.location.href = "/")
+            .catch(showAlertError(formAuthLogin));
+        */
+  });
 }
